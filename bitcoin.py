@@ -53,32 +53,32 @@ def get_current_price(ticker):
 
 # 로그인
 upbit = pyupbit.Upbit(access, secret)
-print("autotrade DOGE start")
+print("autotrade btc start")
 # 시작 메세지 슬랙 전송
-post_message(myToken,"#stock", "autotrade DOGE start")
+post_message(myToken,"#stock", "autotrade btc start")
 
 while True:
     try:
         now = datetime.datetime.now()
-        start_time = get_start_time("KRW-DOGE")
+        start_time = get_start_time("KRW-BTC")
         end_time = start_time + datetime.timedelta(days=1)
 
         if start_time < now < end_time - datetime.timedelta(seconds=10):
-            target_price = get_target_price("KRW-DOGE", 0.5)
-            ma15 = get_ma15("KRW-DOGE")
-            current_price = get_current_price("KRW-DOGE")
+            target_price = get_target_price("KRW-BTC", 0.5)
+            ma15 = get_ma15("KRW-BTC")
+            current_price = get_current_price("KRW-BTC")
             if target_price < current_price and ma15 < current_price:
                 krw = get_balance("KRW")
                 if krw > 5000:
-                    buy_result = upbit.buy_market_order("KRW-DOGE", krw*0.9995)
-                    post_message(myToken,"#stock", "DOGE buy  krw > 5000 : " +str(buy_result))
+                    buy_result = upbit.buy_market_order("KRW-BTC", krw*0.9995)
+                    post_message(myToken,"#stock", "btc buy  krw > 5000 : " +str(buy_result))
         else:
-            doge = get_balance("DOGE")
-            if doge > 0.00008:
-                sell_result = upbit.sell_market_order("KRW-DOGE", doge*0.9995)
-                post_message(myToken,"#stock", "DOGE buy : " +str(sell_result))
+            btc = get_balance("btc")
+            if btc > 0.00008:
+                sell_result = upbit.sell_market_order("KRW-BTC", btc*0.9995)
+                post_message(myToken,"#stock", "btc buy : " +str(sell_result))
         time.sleep(1)
     except Exception as e:
         print(e)
-        post_message(myToken,"#stock", "doge : " + e)
+        post_message(myToken,"#stock", "btc : " + e)
         time.sleep(1)
