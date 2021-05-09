@@ -18,27 +18,27 @@ def get_target_price(ticker, k):
     """변동성 돌파 전략으로 매수 목표가 조회"""
     df = pyupbit.get_ohlcv(ticker, interval="day", count=2)
     target_price = df.iloc[0]['close'] + (df.iloc[0]['high'] - df.iloc[0]['low']) * k
-    post_message(myToken,"#stock", "target_price : " +  str(target_price))
+    #post_message(myToken,"#stock", "target_price : " +  str(target_price))
     return target_price
 
 def get_start_time(ticker):
     """시작 시간 조회"""
     df = pyupbit.get_ohlcv(ticker, interval="day", count=1)
     start_time = df.index[0]
-    post_message(myToken,"#stock", "start_time : " +  str(start_time))
+   # post_message(myToken,"#stock", "start_time : " +  str(start_time))
     return start_time
 
 def get_ma15(ticker):
     """15일 이동 평균선 조회"""
     df = pyupbit.get_ohlcv(ticker, interval="day", count=15)
     ma15 = df['close'].rolling(15).mean().iloc[-1]
-    post_message(myToken,"#stock", "15 day mov avg : " +  str(ma15))
+    #post_message(myToken,"#stock", "15 day mov avg : " +  str(ma15))
     return ma15
 
 def get_balance(coin):
     """잔고 조회"""
     balances = upbit.get_balances()
-    post_message(myToken,"#stock", "now my coin  : " +  str(balances))
+   # post_message(myToken,"#stock", "now my coin  : " +  str(balances))
     for b in balances:
         if b['currency'] == coin:
             if b['balance'] is not None:
@@ -48,7 +48,7 @@ def get_balance(coin):
 
 def get_current_price(ticker):
     """현재가 조회"""
-    post_message(myToken,"#stock", "now pay : " +  str(pyupbit.get_orderbook(tickers=ticker)[0]["orderbook_units"][0]["ask_price"]))
+   #post_message(myToken,"#stock", "now pay : " +  str(pyupbit.get_orderbook(tickers=ticker)[0]["orderbook_units"][0]["ask_price"]))
     return pyupbit.get_orderbook(tickers=ticker)[0]["orderbook_units"][0]["ask_price"]
 
 # 로그인
