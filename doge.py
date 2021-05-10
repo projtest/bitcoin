@@ -3,9 +3,9 @@ import pyupbit
 import datetime
 import requests
 
-access = ""
-secret = ""
-myToken = ""
+access = "48J3OBNLOxXaxLa82lyjNxasBNVGXx74UK2qXoR4"
+secret = "TFzCaJS0gPgaQ6DhkdgY1CNieYzx2CTFTlCEGtJq"
+myToken = "xoxb-2069413652384-2042536449237-uNR1JIuW5DFQZYaBcXY6A1UB"
 
 def post_message(token, channel, text):
     """슬랙 메시지 전송"""
@@ -29,20 +29,22 @@ def get_start_time(ticker):
     return start_time
 
 def get_ma15(ticker):
-    """15일 이동 평균선 조회"""
-    df = pyupbit.get_ohlcv(ticker, interval="day", count=15)
+    """5일 이동 평균선 조회"""
+    df = pyupbit.get_ohlcv(ticker, interval="day", count=5)
     ma15 = df['close'].rolling(15).mean().iloc[-1]
     #post_message(myToken,"#stock", "15 day mov avg : " +  str(ma15))
     return ma15
 
 def get_balance(coin):
-    """잔고 조회"""
+    """잔고 조회 50%만 조회"""
     balances = upbit.get_balances()
     #post_message(myToken,"#stock", "now my coin  : " +  str(balances))
     for b in balances:
         if b['currency'] == coin:
             if b['balance'] is not None:
-                return float(b['balance'])
+                # print("balance" + str(float(b['balance'])))
+                # print("balance/50" + str(float(b['balance'])/50))
+                return float(b['balance'])/50
             else:
                 return 0
 
@@ -53,32 +55,45 @@ def get_current_price(ticker):
 
 # 로그인
 upbit = pyupbit.Upbit(access, secret)
-print("autotrade DOGE start")
+print("autotrade doge start")
 # 시작 메세지 슬랙 전송
-post_message(myToken,"#stock", "autotrade DOGE start")
+post_message(myToken,"#stock", "autotrade doge start")
 
 while True:
     try:
+        get_balance("KRW")
         now = datetime.datetime.now()
         start_time = get_start_time("KRW-DOGE")
         end_time = start_time + datetime.timedelta(days=1)
 
         if start_time < now < end_time - datetime.timedelta(seconds=10):
+            # 변동성 돌파 전략으로 매수 목표가 조회
             target_price = get_target_price("KRW-DOGE", 0.5)
+            # 15일 이동 평균선 조회
             ma15 = get_ma15("KRW-DOGE")
+            # 현재가 조회
             current_price = get_current_price("KRW-DOGE")
             if target_price < current_price and ma15 < current_price:
+                # 잔고 조회
                 krw = get_balance("KRW")
                 if krw > 5000:
+                    # 사장가 매수
                     buy_result = upbit.buy_market_order("KRW-DOGE", krw*0.9995)
-                    post_message(myToken,"#stock", "DOGE buy  krw > 5000 : " +str(buy_result))
+                    post_message(myToken,"#stock", "order start")
+                    post_message(myToken,"#stock", "doge buy  krw > 5000 : " +str(buy_result))
+                    post_message(myToken,"#stock", "start_time : " +str(start_time))
+                    post_message(myToken,"#stock", "noew krw  : " +str(krw))
+                    post_message(myToken,"#stock", "target_price  : " +str(target_price))
+                    post_message(myToken,"#stock", "15day mov avg  : " +str(ma15))
+                    post_message(myToken,"#stock", "order end")
         else:
-            doge = get_balance("DOGE")
+            doge = get_balance("doge")
             if doge > 0.00008:
+                # 시장가 매도
                 sell_result = upbit.sell_market_order("KRW-DOGE", doge*0.9995)
-                post_message(myToken,"#stock", "DOGE buy : " +str(sell_result))
+                post_message(myToken,"#stock", "doge buy : " +str(sell_result))
         time.sleep(1)
     except Exception as e:
         print(e)
-        post_message(myToken,"#stock", "doge : " + str(e))
+        post_message(myToken,"#stock", "doge error : " + str(e))
         time.sleep(1)

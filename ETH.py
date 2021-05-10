@@ -2,6 +2,7 @@ import time
 import pyupbit
 import datetime
 import requests
+import numpy as np
 
 access = ""
 secret = ""
@@ -36,13 +37,13 @@ def get_ma15(ticker):
     return ma15
 
 def get_balance(coin):
-    """잔고 조회"""
+    """잔고 조회 50%만 조회"""
     balances = upbit.get_balances()
     #post_message(myToken,"#stock", "now my coin  : " +  str(balances))
     for b in balances:
         if b['currency'] == coin:
             if b['balance'] is not None:
-                return float(b['balance'])
+                return float(b['balance'])/50
             else:
                 return 0
 
@@ -50,6 +51,10 @@ def get_current_price(ticker):
     """현재가 조회"""
    # post_message(myToken,"#stock", "now pay : " +  str(pyupbit.get_orderbook(tickers=ticker)[0]["orderbook_units"][0]["ask_price"]))
     return pyupbit.get_orderbook(tickers=ticker)[0]["orderbook_units"][0]["ask_price"]
+
+for k in np.arange(0.1, 1.0, 0.1):
+    ror = get_ror(k)
+    print("%.1f %f" % (k, ror))
 
 # 로그인
 upbit = pyupbit.Upbit(access, secret)
@@ -64,21 +69,33 @@ while True:
         end_time = start_time + datetime.timedelta(days=1)
 
         if start_time < now < end_time - datetime.timedelta(seconds=10):
+            # 변동성 돌파 전략으로 매수 목표가 조회
             target_price = get_target_price("KRW-ETH", 0.5)
+            # 15일 이동 평균선 조회
             ma15 = get_ma15("KRW-ETH")
+            # 현재가 조회
             current_price = get_current_price("KRW-ETH")
             if target_price < current_price and ma15 < current_price:
+                # 잔고 조회
                 krw = get_balance("KRW")
                 if krw > 5000:
+                    # 사장가 매수
                     buy_result = upbit.buy_market_order("KRW-ETH", krw*0.9995)
+                    post_message(myToken,"#stock", "order start")
                     post_message(myToken,"#stock", "eth buy  krw > 5000 : " +str(buy_result))
+                    post_message(myToken,"#stock", "start_time : " +str(start_time))
+                    post_message(myToken,"#stock", "noew krw  : " +str(krw))
+                    post_message(myToken,"#stock", "target_price  : " +str(target_price))
+                    post_message(myToken,"#stock", "15day mov avg  : " +str(ma15))
+                    post_message(myToken,"#stock", "order end")
         else:
             eth = get_balance("eth")
             if eth > 0.00008:
+                # 시장가 매도
                 sell_result = upbit.sell_market_order("KRW-ETH", eth*0.9995)
                 post_message(myToken,"#stock", "eth buy : " +str(sell_result))
         time.sleep(1)
     except Exception as e:
         print(e)
-        post_message(myToken,"#stock", "eth : " + str(e))
+        post_message(myToken,"#stock", "eth error : " + str(e))
         time.sleep(1)
