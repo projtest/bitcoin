@@ -52,10 +52,6 @@ def get_current_price(ticker):
    # post_message(myToken,"#stock", "now pay : " +  str(pyupbit.get_orderbook(tickers=ticker)[0]["orderbook_units"][0]["ask_price"]))
     return pyupbit.get_orderbook(tickers=ticker)[0]["orderbook_units"][0]["ask_price"]
 
-for k in np.arange(0.1, 1.0, 0.1):
-    ror = get_ror(k)
-    print("%.1f %f" % (k, ror))
-
 # 로그인
 upbit = pyupbit.Upbit(access, secret)
 print("autotrade eth start")
